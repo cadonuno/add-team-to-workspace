@@ -8,7 +8,7 @@ from veracode_api_signing.plugin_requests import RequestsAuthPluginVeracodeHMAC
 from veracode_api_signing.credentials import get_credentials
 
 headers = {
-    "User-Agent": "Dynamic Analysis API Example Client",
+    "User-Agent": "Add teams to workspace script",
     "Content-Type": "application/json"
 }
 
