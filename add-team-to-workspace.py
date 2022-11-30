@@ -15,8 +15,8 @@ headers = {
 
 def print_help():
     """Prints command line options and exits"""
-    print("""add-team-to-workspace.py -w <workspace_name> -t <team> [-d]"]
-        Gives access to <workspace_name> to the <team> team
+    print("""add-team-to-workspace.py -w <workspace_name> -t <team_name> [-d]"
+        Gives access to <workspace_name> to a team called <team_name>
 """)
     sys.exit()
 
