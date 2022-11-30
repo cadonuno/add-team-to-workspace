@@ -17,8 +17,6 @@ Install dependencies:
     cd add-team-to-workspace
     pip install -r requirements.txt
 
-## Usage
-
 ### Getting Started
 
 It is highly recommended that you store veracode API credentials on disk, in a secure file that has 
