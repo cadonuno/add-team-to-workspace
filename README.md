@@ -1,5 +1,3 @@
-<img src="https://help.veracode.com/internal/api/webapp/header/logo" width="200" /><br>
-
 # Add team to workspace
 
 ## Overview
@@ -16,8 +14,6 @@ Install dependencies:
 
     cd add-team-to-workspace
     pip install -r requirements.txt
-
-## Usage
 
 ### Getting Started
 
