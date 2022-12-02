@@ -27,7 +27,7 @@ appropriate file protections in place.
     veracode_api_key_secret = <YOUR_API_KEY_SECRET>
 
 
-### Preparing the Excel
+### Preparing the Excel Template
     The Excel template present in the repository can be used to prepare the metadata, after the script finishes execution.
     the Status (third) column will contain the status of each line
     
