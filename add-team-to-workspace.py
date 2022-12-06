@@ -9,6 +9,14 @@ import time
 
 from veracode_api_signing.credentials import get_credentials
 
+class NoExactMatchFoundException(Exception):
+    message=""
+    def __init__(self, message_to_set):
+        self.message = message_to_set
+
+    def get_message(self):
+        return self.message
+
 
 headers = {
     "User-Agent": "Adding teams to workspaces - python script",
@@ -128,7 +136,7 @@ def add_team_to_workspace(api_base, workspace_name, team_parameter_value, verbos
         
     if response.status_code == 204:
         print("Successfully added team to workspace.")
-        return "done"
+        return "success"
     else:
         print(f"Unable to provide access to team: {response.status_code}")
         if verbose and response:
@@ -191,7 +199,7 @@ def main(argv):
                 team=excel_sheet.cell(row = row, column = 2).value
                 status=excel_sheet.cell(row = row, column = 3).value
                 print(f"Found: {workspace} | {team} | {status}")
-                if (status == 'done'):
+                if (status == 'success'):
                     print("Skipping row as it was already done")
                 else:
                     try:
@@ -216,7 +224,7 @@ if __name__ == "__main__":
 class NoExactMatchFoundException(Exception):
     message=""
     def __init__(self, message_to_set):
-        message = message_to_set
+        self.message = message_to_set
 
     def get_message(self):
-        return message
+        return self.message
