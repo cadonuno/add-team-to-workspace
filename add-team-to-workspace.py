@@ -26,6 +26,8 @@ headers = {
 failed_attempts = 0
 max_attempts_per_request = 10
 sleep_time = 10
+workspaces_dict = {}
+teams_dics = {}
 
 def print_help():
     """Prints command line options and exits"""
@@ -36,9 +38,14 @@ def print_help():
     sys.exit()
 
 def get_workspace_by_name(api_base, workspace_name, verbose):
+    global workspaces_dict
     global failed_attempts
     global sleep_time
     global max_attempts_per_request
+    if workspace_name in workspaces_dict:
+        if verbose:
+            print(f"Found {workspace_name} cached -> {workspaces_dict[workspace_name]}")
+        return workspaces_dict[workspace_name]
     path = f"{api_base}srcclr/v3/workspaces?filter%5Bworkspace%5D={urllib.parse.quote(workspace_name, safe='')}"
     if verbose:
         print(f"Calling: {path}")
@@ -49,8 +56,10 @@ def get_workspace_by_name(api_base, workspace_name, verbose):
     if response.status_code == 200:
         if verbose:
             print(data)
-        if len(data["_embedded"]["workspaces"]) > 0:
-            return find_exact_match(data["_embedded"]["workspaces"], workspace_name, "name")
+        if "_embedded" in data and len(data["_embedded"]["workspaces"]) > 0:
+            found_workspace = find_exact_match(data["_embedded"]["workspaces"], workspace_name, "name")
+            workspaces_dict[workspace_name] = found_workspace
+            return found_workspace
         else:
             print(f"ERROR: No workspace named '{workspace_name}' found")
             return f"ERROR: No workspace named '{workspace_name}' found"
@@ -67,9 +76,12 @@ def get_workspace_by_name(api_base, workspace_name, verbose):
     
 
 def get_team_by_name(api_base, team_name, verbose):
+    global teams_dics
     global failed_attempts
     global sleep_time
     global max_attempts_per_request
+    if team_name in teams_dics:
+        return teams_dics[team_name]
     path = f"{api_base}api/authn/v2/teams?all_for_org=true&team_name={urllib.parse.quote(team_name, safe='')}"
     if verbose:
         print(f"Calling: {path}")
@@ -81,7 +93,9 @@ def get_team_by_name(api_base, team_name, verbose):
         if verbose:
             print(data)
         if len(data["_embedded"]["teams"]) > 0:
-            return find_exact_match(data["_embedded"]["teams"], team_name, "team_name")
+            found_team = find_exact_match(data["_embedded"]["teams"], team_name, "team_name")
+            teams_dics[team_name] = found_team
+            return found_team
         else:
             print(f"ERROR: No team named '{team_name}' found")
             return f"ERROR: No team named '{team_name}' found"
@@ -192,21 +206,27 @@ def main(argv):
             excel_file = openpyxl.load_workbook(file_name)
             excel_sheet = excel_file.active
             
-            for row in range(2, excel_sheet.max_row):          
+            for row in range(2, excel_sheet.max_row+1):          
                 print(f"Starting proccess for row {row}:")
                 failed_attempts = 0
                 workspace=excel_sheet.cell(row = row, column = 1).value
-                team=excel_sheet.cell(row = row, column = 2).value
-                status=excel_sheet.cell(row = row, column = 3).value
-                print(f"Found: {workspace} | {team} | {status}")
-                if (status == 'success'):
-                    print("Skipping row as it was already done")
-                else:
-                    try:
-                        status=add_team_to_workspace(api_base, workspace, team, verbose, use_team_id)
-                    except NoExactMatchFoundException:
-                        status= NoExactMatchFoundException.get_message()
-                    excel_sheet.cell(row = row, column = 3).value=status
+                teams=excel_sheet.cell(row = row, column = 2).value
+                base_status_column = 3
+                team_list = teams.split(",")
+                print(f"Found item: {workspace} | {teams}")
+                for current_index in range(0, len(team_list)):
+                    team = team_list[current_index].strip()
+                    status_column = base_status_column+current_index
+                    status=excel_sheet.cell(row = row, column = status_column).value
+                    print(f"trying to create {workspace} | {team} | {status}")
+                    if (status == 'success'):
+                        print("Skipping item as it was already done")
+                    else:
+                        try:
+                            status=add_team_to_workspace(api_base, workspace, team, verbose, use_team_id)
+                        except NoExactMatchFoundException:
+                            status= NoExactMatchFoundException.get_message()
+                        excel_sheet.cell(row = row, column = status_column).value=status
 
         else:
             print_help()
@@ -220,11 +240,3 @@ def main(argv):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
-
-class NoExactMatchFoundException(Exception):
-    message=""
-    def __init__(self, message_to_set):
-        self.message = message_to_set
-
-    def get_message(self):
-        return self.message
