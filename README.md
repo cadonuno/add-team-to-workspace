@@ -1,4 +1,4 @@
-# Bulk add team to workspace
+# Bulk add teams to workspace
 
 ## Overview
 
